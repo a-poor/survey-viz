@@ -26,18 +26,18 @@ ind.var.set <- c(
   "LGBTQ" = "LGBTQ"
 )
 dep.var.set <- c(
-  "Value" = "Value Received",
-  "Isolated" = "Felt Isolated",
-  "Belong" = "Feel Belong",
-  "DemeaningBehavior" = "Demeaning Behavior",
+  "Value Received" = "Value",
+  "Felt Isolated" = "Isolated",
+  "Feel Belong" = "Belong",
+  "Demeaning Behavior" = "DemeaningBehavior",
   "Standoffish" = "Standoffish",
-  "ValueGenders" = "Values All Genders",
+  "Values All Genders" = "ValueGenders",
   "Intimidating" = "Intimidating",
   "Inclusive" = "Inclusive",
-  "OpValued" = "Opinion Valued",
-  "Recommend" = "Would Recommend",
-  "Renew" = "Likley to Renew",
-  "OverallSAT" = "Overall Satisfaction"
+  "Opinion Valued" = "OpValued",
+  "Would Recommend" = "Recommend",
+  "Likley to Renew" = "Renew",
+  "Overall Satisfaction" = "OverallSAT"
 )
 
 
@@ -64,7 +64,7 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+           plotOutput("plot")
         )
     ),
     
@@ -72,36 +72,21 @@ ui <- fluidPage(
     
 )
 
+getDF <- function (ind, dep) {
+  data %>% select(!!ind, !!dep) %>% drop_na()
+}
+
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  
-    output$table <- renderDataTable(data, options = list(pageLength = 10))
-
-    output$plot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      df <- data %>% 
-        select(
-          input$ind.var,
-          input$dep.var
-        ) %>% drop_na()
-      
-      df %>% ggplot(aes_string(x = input$ind.var, y = input$dep.var)) + geom_bar()
-      
-      # x    <- data[, 2]
-      # bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      # 
-      # # draw the histogram with the specified number of bins
-      # hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    })
-    
-    # output$distPlot <- renderPlot({
-    #     # generate bins based on input$bins from ui.R
-    #     x    <- faithful[, 2]
-    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    # 
-    #     # draw the histogram with the specified number of bins
-    #     hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    # })
+  output$table <- renderDataTable(
+    getDF(input$ind.var, input$dep.var), 
+    options = list(pageLength = 10)
+  )
+  output$plot <- renderPlot({
+    getDF(input$ind.var, input$dep.var) %>% 
+      ggplot(aes(x = get(input$dep.var), fill = get(input$ind.var))) + 
+      geom_bar(position="dodge")
+  })
 }
 
 # Run the application 
